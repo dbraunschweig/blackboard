@@ -30,12 +30,17 @@ def key_released(variable):
 
         if name != author:
             if name != '':
-                result += str(count) + '\n'
+                result += str(count) + ' posts - ' + "{0:.2f}".format(total / count) + ' words\n'
                 result += '\n'
             name = author
             count = 0
+            total = 0
 
-        result += author + ' - ' + date + '\n'
+        index = string.find("Tags:", match.end(0))
+        words = len(string[match.end(0):index].split(" "))
+        total += words
+
+        result += author + ' - ' + date + " - " + str(words) + ' words\n'
         count += 1
         string = string[match.end(0):]
 
