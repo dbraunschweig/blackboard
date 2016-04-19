@@ -3,9 +3,14 @@ import tkinter
 import tkinter.scrolledtext
 
 text = ''
+done = False
 
 def key_released(variable):
     global text
+    global done
+
+    if done:
+        return
 
     string = scrolledtext.get(1.0, tkinter.END)
     if text == string:
@@ -14,6 +19,7 @@ def key_released(variable):
     text = string
     regex = re.compile("^Thread:(.*)Post:(.*)Author:(.*)Posted Date:(.*)Status:Published", re.MULTILINE)
     name = ''
+    total = 0
     count = 0
     result = ''
 
@@ -24,31 +30,34 @@ def key_released(variable):
 
         author = match.group(3).strip()
         date = match.group(4).strip()
-
         if date.find("Edited Date:") > 0:
             date = date[0:date.find("Edited Date:")]
+        content = text[match.end(0):text.find("Tags: ", match.end(0))]
+        content = content.strip()
+        words = len(content.split())
 
         if name != author:
             if name != '':
-                result += str(count) + ' posts - ' + "{0:.2f}".format(total / count) + ' words\n'
-                result += '\n'
+                result += str(count) + ' post(s)'
+                if count > 0:
+                    result += ' - {:.1f} words per post average'.format(total / count)
+                result += '\n\n'
+            result += author + '\n'
             name = author
-            count = 0
             total = 0
+            count = 0
 
-        index = string.find("Tags:", match.end(0))
-        words = len(string[match.end(0):index].split(" "))
-        total += words
-
-        result += author + ' - ' + date + " - " + str(words) + ' words\n'
+        result += date + ' - ' + str(words) + ' words\n'
+        total = total + words
         count += 1
         string = string[match.end(0):]
 
-    if result != "":
-        result += str(count)
-        scrolledtext.delete(1.0, tkinter.END)
-        scrolledtext.insert(tkinter.END, result)
-        text = result
+    result += str(count) + ' post(s)'
+    if count > 0:
+                    result += ' - {:.1f} words per post average'.format(total / count)
+    done = True
+    scrolledtext.delete(1.0, tkinter.END)
+    scrolledtext.insert(tkinter.END, result)
 
 root = tkinter.Tk()
 root.wm_title("Blackboard Discussion Grader")
